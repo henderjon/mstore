@@ -33,11 +33,7 @@ func TestWriteTo(t *testing.T) {
 	m.Meta.Add("Content-Type", "text/plain; charset=UTF-8")
 	m.Write([]byte("This is the body of the message."))
 
-	buf := make([]byte, 0)
-	ex := bytes.NewBuffer(buf)
-	m.WriteTo(ex)
-
-	if ex.String() != testPayload {
+	if m.String() != testPayload {
 		t.Error("body mismatch")
 	}
 }

@@ -1,0 +1,2 @@
+  - return int64 to satisfy WriterTo and ReaderFrom interfaces
+  - continue more betterness

@@ -15,7 +15,7 @@ import (
 	"net/mail"
 )
 
-const EOL = "\r\n"
+const EOL = []byte("\r\n")
 
 // Messages have two parts: Meta and Body. Messages very closely resemble a raw
 // email message or raw HTTP request with the absence of a few distinctive
@@ -40,6 +40,14 @@ func (p *Message) Write(b []byte) (int, error) {
 	return i, err
 }
 
+// String provides a simple API to viewing the final payload (Headers + Body)
+// as a string.
+func (p *Message) String() string {
+	buf := &bytes.Buffer{}
+	p.WriteTo(buf)
+	return buf.String()
+}
+
 // Write to w, ending with two blank lines
 func (p *Message) WriteTo(w io.Writer) error {
 	var err error
@@ -48,13 +56,13 @@ func (p *Message) WriteTo(w io.Writer) error {
 		return err
 	}
 
-	w.Write([]byte(EOL))
+	w.Write(EOL)
 
 	if _, err = p.Body.WriteTo(w); err != nil {
 		return err
 	}
 
-	w.Write([]byte(EOL))
+	w.Write(EOL)
 	return nil
 }
 
@@ -74,6 +82,7 @@ func (p *Message) ReadFrom(r io.Reader) error {
 
 	p.Meta = h
 	p.Body = buf
+	return nil
 }
 
 // Parse from r, parsing into a new message
