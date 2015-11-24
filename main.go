@@ -48,7 +48,7 @@ func (p *Message) String() string {
 	return buf.String()
 }
 
-// Write to w, ending with two blank lines
+// Write to w
 func (p *Message) WriteTo(w io.Writer) error {
 	var err error
 
