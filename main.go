@@ -15,7 +15,7 @@ import (
 	"net/mail"
 )
 
-const EOL = []byte("\r\n")
+const EOL = "\r\n"
 
 // Messages have two parts: Meta and Body. Messages very closely resemble a raw
 // email message or raw HTTP request with the absence of a few distinctive
@@ -56,13 +56,13 @@ func (p *Message) WriteTo(w io.Writer) error {
 		return err
 	}
 
-	w.Write(EOL)
+	w.Write([]byte(EOL))
 
 	if _, err = p.Body.WriteTo(w); err != nil {
 		return err
 	}
 
-	w.Write(EOL)
+	w.Write([]byte(EOL))
 	return nil
 }
 
