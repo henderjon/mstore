@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"io"
@@ -14,13 +15,17 @@ const EOL = "\r\n"
 
 type Message struct {
 	Header http.Header
-	Body   bytes.Buffer
+	Body   *bufio.ReadWriter
 }
 
 func NewMessage() Message {
+	b := bytes.Buffer{}
 	return Message{
 		make(http.Header),
-		bytes.Buffer{},
+		bufio.NewReadWriter(
+			bufio.NewReader(&b),
+			bufio.NewWriter(&b),
+		),
 	}
 }
 
@@ -28,6 +33,7 @@ func main() {
 	m := NewMessage()
 	m.Header.Add("test-header", "test-value")
 	m.Body.Write([]byte(`this is a long string of stuff`))
+	m.Body.Flush()
 	m.Put(os.Stdout)
 
 	fmt.Println("#----------------------#")
@@ -53,6 +59,7 @@ func (p Message) Put(w io.Writer) {
 
 	w.Write([]byte(EOL))
 	w.Write([]byte(EOL))
+	w.Write([]byte(EOL))
 }
 
 func Get(r io.Reader) Message {
@@ -63,7 +70,13 @@ func Get(r io.Reader) Message {
 	}
 
 	by := bytes.Buffer{}
-	if _, err := by.ReadFrom(mm.Body); err != nil {
+
+	buf := bufio.NewReadWriter(
+		bufio.NewReader(&by),
+		bufio.NewWriter(&by),
+	)
+
+	if _, err := buf.ReadFrom(mm.Body); err != nil {
 		log.Fatal(err)
 	}
 
@@ -71,7 +84,7 @@ func Get(r io.Reader) Message {
 
 	return Message{
 		h,
-		by,
+		buf,
 	}
 
 }
