@@ -26,14 +26,14 @@ type Message struct {
 }
 
 // Creates a new Message
-func NewMessage() *Message {
-	return &Message{
+func NewMessage() Message {
+	return Message{
 		http.Header{},
 		bytes.Buffer{},
 	}
 }
 
-// Writes to the Message.Body can be done by Message.Write. There is no
+// Writes to the Message.Body can be done by message.Write. There is no
 // need to force using Message.Body.Write() on the API
 func (p *Message) Write(b []byte) (int, error) {
 	i, err := p.Body.Write(b)
@@ -48,18 +48,29 @@ func (p *Message) String() string {
 	return buf.String()
 }
 
-// Write to w
+// Write to w; an empty header or empty body has to be accounted from with an
+// additional newline
 func (p *Message) WriteTo(w io.Writer) error {
 	var err error
+	var b int64
 
 	if err = p.Meta.WriteSubset(w, nil); err != nil {
 		return err
 	}
 
+	if len(p.Meta) < 1 {
+		w.Write([]byte(EOL))
+	}
+
 	w.Write([]byte(EOL))
 
-	if _, err = p.Body.WriteTo(w); err != nil {
+	b, err = p.Body.WriteTo(w)
+	if err != nil {
 		return err
+	}
+
+	if b < 1 {
+		w.Write([]byte(EOL))
 	}
 
 	w.Write([]byte(EOL))
@@ -84,10 +95,3 @@ func (p *Message) ReadFrom(r io.Reader) error {
 	p.Body = buf
 	return nil
 }
-
-// Parse from r, parsing into a new message
-// func Parse(r io.Reader) *Message {
-// 	m := NewMessage()
-// 	m.ReadFrom(r)
-// 	return m
-// }
